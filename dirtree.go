@@ -16,7 +16,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gammazero/queue"
+	"github.com/gammazero/deque"
 )
 
 // Dirent is an element in a tree similar to a basic directory tree.
@@ -172,17 +172,17 @@ func (d *Dirent) Rename(name string) error {
 
 // Find performs a breadth-first search for a node with the given name.
 func (d *Dirent) Find(name string) *Dirent {
-	nodes := queue.New()
-	nodes.Add(d)
+	var nodes deque.Deque
+	nodes.PushBack(d)
 	var node, ch *Dirent
 	var found bool
-	for nodes.Length() > 0 {
-		node = nodes.Remove().(*Dirent)
+	for nodes.Len() > 0 {
+		node = nodes.PopFront().(*Dirent)
 		if ch, found = node.children[name]; found {
 			return ch
 		}
 		for _, ch = range node.children {
-			nodes.Add(ch)
+			nodes.PushBack(ch)
 		}
 	}
 	return nil
@@ -206,7 +206,7 @@ func (d *Dirent) List() []string {
 		return nil
 	}
 	childNames := make([]string, 0, len(d.children))
-	for name, _ := range d.children {
+	for name := range d.children {
 		childNames = append(childNames, name)
 	}
 	sort.Strings(childNames)
